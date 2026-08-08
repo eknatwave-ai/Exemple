@@ -3,77 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
-    <title>Shopnet - Простой Сервис</title>
+    <title>Shopnet - Pure Native App</title>
 
-    <!-- 1. Подключаем официальное SDK Telegram -->
+    <!-- 1. Подключаем официальное SDK Telegram Mini Apps -->
     <script src="https://telegram.org"></script>
 
-    <!-- 2. Скрипт инициализации шестерёнки и полноэкранного режима -->
+    <!-- 2. Инициализация полноэкранного режима и шестерёнки -->
     <script>
         async function initTelegramApp() {
             try {
-                // Инициализируем Telegram Web App
+                // Сообщаем Telegram, что сайт полностью готов к работе
                 window.Telegram.WebApp.ready();
 
-                // Разворачиваем на максимум шторку приложения
+                // Вытягиваем шторку мини-приложения на максимум вверх
                 window.Telegram.WebApp.expand();
 
-                // Полноэкранный режим 2.0 (если поддерживается устройством)
+                // Активируем аппаратный полноэкранный режим (Fullscreen 2.0)
                 if (window.Telegram.WebApp.requestFullscreen) {
                     await window.Telegram.WebApp.requestFullscreen();
                 }
 
-                // ВКЛЮЧАЕМ ШЕСТЕРЁНКУ НАВЕРХУ: Показываем кнопку настроек
+                // ПРОВЕРОЧНОЕ ОКНО: Если оно всплывает, значит новая версия сайта загрузилась!
+                window.Telegram.WebApp.showAlert("Скрипт Telegram успешно запущен на сайте!");
+
+                // Перекрашиваем верхнюю плашку Telegram в цвет фона сайта
+                window.Telegram.WebApp.setHeaderColor('#0c0d12');
+
+                // ВКЛЮЧАЕМ НАВЕРХУ ОФИЦИАЛЬНУЮ ШЕСТЕРЁНКУ ТЕЛЕГРАМА
                 window.Telegram.WebApp.SettingsButton.show();
 
                 // Привязываем вызов меню возможностей к клику на шестерёнку
-                window.Telegram.WebApp.SettingsButton.onClick(openMenuPopup);
+                window.Telegram.WebApp.SettingsButton.onClick(openTelegramMenu);
 
             } catch (error) {
                 console.log("Ожидание запуска внутри мессенджера Telegram");
             }
         }
 
-        // Функция, которая срабатывает при нажатии на нативную шестерёнку (⚙️)
-        function openMenuPopup() {
-            // Легкая вибрация телефона для приятного отклика
+        // Функция, которая срабатывает при нажатии на системную шестерёнку (⚙️)
+        function openTelegramMenu() {
+            // Приятный тактильный отклик (вибрация средней силы)
             if (window.Telegram.WebApp.HapticFeedback) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
             }
 
-            // Вызываем официальное всплывающее окно Telegram с возможностями вашего сайта
+            // Открываем нативное всплывающее окно самого Telegram
             window.Telegram.WebApp.showPopup({
                 title: 'Возможности Shopnet',
-                message: 'Выберите нужный инструмент или функцию нашего сервиса:',
+                message: 'Выберите интересующий вас раздел или функцию приложения:',
                 buttons: [
-                    {id: 'opt_bonus', type: 'default', text: '🎁 Забрать приветственный бонус'},
-                    {id: 'opt_promo', type: 'default', text: '🔥 Активировать секретный промокод'},
-                    {id: 'opt_help', type: 'default', text: '💬 Написать в техподдержку'},
-                    {id: 'opt_close', type: 'cancel', text: 'Закрыть меню'}
+                    {id: 'btn_bonus', type: 'default', text: '🎁 Забрать приветственный бонус'},
+                    {id: 'btn_promo', type: 'default', text: '🔥 Получить секретный промокод'},
+                    {id: 'btn_support', type: 'default', text: '💬 Связаться с разработчиком'},
+                    {id: 'btn_close', type: 'cancel', text: 'Закрыть меню'}
                 ]
             }, function(buttonId) {
-                // Обрабатываем выбор пользователя во всплывающем окне
-                if (buttonId === 'opt_bonus') {
-                    showMessage('Поздравляем! Вам начислено 500 приветственных баллов.');
-                } else if (buttonId === 'opt_promo') {
-                    showMessage('Ваш личный промокод активен: SHOP2026 (Скидка 15%)');
-                } else if (buttonId === 'opt_help') {
-                    showMessage('Перенаправляем в чат со специалистом поддержки...');
+                // Обрабатываем клики по кнопкам внутри нативного попапа
+                const statusBox = document.getElementById('status-text');
+
+                if (buttonId === 'btn_bonus') {
+                    statusBox.innerText = 'Поздравляем! Вам начислено 500 баллов.';
+                } else if (buttonId === 'btn_promo') {
+                    statusBox.innerText = 'Ваш промокод: SHOP2026 (Скидка 15%)';
+                } else if (buttonId === 'btn_support') {
+                    statusBox.innerText = 'Перенаправляем в чат поддержки...';
                 }
             });
         }
 
-        // Простая вспомогательная функция для вывода сообщений
-        function showMessage(text) {
-            document.getElementById('status-text').innerText = text;
-        }
-
-        // Запускаем инициализацию сразу после загрузки страницы
+        // Запуск логики сразу после загрузки DOM-структуры
         window.addEventListener('DOMContentLoaded', initTelegramApp);
     </script>
 
     <style>
-        /* Общие стили страницы */
+        /* Общие стили страницы сайта */
         body {
             margin: 0;
             padding: 0;
@@ -81,35 +84,35 @@
             height: 100vh;
             background-color: #0c0d12;
             color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Главный карточный контейнер */
+        /* Главная карточка приложения */
         .app-card {
-            width: 90%;
-            max-width: 360px;
+            width: 85%;
+            max-width: 340px;
             background-color: #1e1f26;
             border-radius: 24px;
             padding: 30px;
             text-align: center;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
         }
 
-        /* Заголовок проекта */
+        /* Название платформы */
         .app-title {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
             color: #2f80ed;
-            margin-bottom: 10px;
-            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            letter-spacing: 0.3px;
         }
 
-        /* Описание */
+        /* Текст-описание */
         .app-description {
             font-size: 14px;
             color: #8fa2b2;
@@ -117,7 +120,7 @@
             margin-bottom: 25px;
         }
 
-        /* Информационное табло для вывода результатов */
+        /* Информационное табло */
         .status-box {
             background-color: #2b303c;
             border-radius: 16px;
@@ -130,7 +133,7 @@
             border: 1px dashed #383e4c;
         }
 
-        /* Кнопка на самом сайте */
+        /* Кнопка действия */
         .action-btn {
             width: 100%;
             padding: 15px;
@@ -152,21 +155,21 @@
 </head>
 <body>
 
-    <!-- Главная карточка вашего сайта -->
+    <!-- Интерфейс карточки -->
     <div class="app-card">
         <div class="app-title">Shopnet Platform</div>
         <div class="app-description">
-            Добро пожаловать в веб-интерфейс! Нажмите на иконку шестерёнки <b>(⚙️) в верхнем правом углу Telegram</b>, чтобы открыть панель управления возможностями сайта.
+            Приложение запущено в полноэкранном режиме. Нажмите на нативную шестерёнку <b>(⚙️) на верхней панели Telegram</b> для вызова меню управления возможностями сайта [INDEX].
         </div>
 
-        <!-- Сюда скрипт выводит информацию после нажатий в меню -->
+        <!-- Поле для вывода результатов работы меню -->
         <div class="status-box" id="status-text">
             Ожидание выбора из верхнего меню...
         </div>
 
-        <!-- Обычная кнопка на теле самого сайта -->
-        <button class="action-btn" onclick="openMenuPopup()">
-            Открыть меню возможностей
+        <!-- Кнопка на самом сайте -->
+        <button class="action-btn" onclick="openTelegramMenu()">
+            Открыть меню
         </button>
     </div>
 
