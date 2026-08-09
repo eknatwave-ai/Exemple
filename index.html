@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Pure Fullscreen App</title>
+    <!-- Подключаем официальный скрипт Telegram Web Apps -->
+    <script src="https://telegram.org"></script>
+    <style>
+        /* Обнуляем все отступы, чтобы сайт прижался к краям экрана */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--tg-theme-bg-color, #17212b);
+            color: var(--tg-theme-text-color, #ffffff);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Общие стили для экранов */
+        .screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        /* 1. ЭКРАН ПРИВЕТСТВИЯ (Обычный режим со стрелочками) */
+        #welcome-screen {
+            z-index: 2;
+            opacity: 1;
+            visibility: visible;
+            padding: 20px;
+        }
+
+        /* 2. ГЛАВНЫЙ ЭКРАН (Чистый полный экран) */
+        #main-screen {
+            z-index: 1;
+            opacity: 0;
+            visibility: hidden;
+            /* Защитный отступ, чтобы текст не заезжал под физическую камеру (челку) смартфона */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: #888;
+            font-size: 16px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        /* СТИЛЬ КНОПОК */
+        .btn {
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: transform 0.1s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.97); /* Эффект продавливания при клике */
+        }
+
+        /* Синяя кнопка входа */
+        .btn-primary {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            box-shadow: 0 4px 15px rgba(36, 129, 204, 0.3);
+        }
+
+        /* Красная кнопка выхода */
+        .btn-danger {
+            background-color: #e53935;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ЭКРАН 1: Окно входа (Пока кнопки Telegram видны, просим пользователя нажать кнопку) -->
+    <div id="welcome-screen" class="screen">
+        <h1>Добро пожаловать</h1>
+        <p>Нажмите на кнопку ниже, чтобы перевести приложение в абсолютно чистый полноэкранный режим.</p>
+        <button class="btn btn-primary" onclick="enterFullscreenMode()">Открыть приложение</button>
+    </div>
+
+    <!-- ЭКРАН 2: Ваше приложение (Кнопки Telegram полностью убраны со страницы) -->
+    <div id="main-screen" class="screen">
+        <h1>Абсолютно чистый экран</h1>
+        <p>Сверху больше нет панели Telegram. Нет ни кнопок, ни разделителей, ни троеточий.</p>
+        <button class="btn btn-danger" onclick="exitApp()">Выйти из приложения</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        // Сразу принудительно растягиваем шторку на максимум возможностей
+        tg.expand();
+        tg.BackButton.hide();
+        tg.SettingsButton.hide();
+
+        // ФУНКЦИЯ ПЕРЕХОДА В ЧИСТЫЙ ПОЛНЫЙ ЭКРАН (Срабатывает по клику)
+        function enterFullscreenMode() {
+            // Запрашиваем у Telegram нативное скрытие верхней панели управления
+            if (tg.isVersionAtLeast('8.0') && typeof tg.requestFullscreen === 'function') {
+                tg.requestFullscreen();
+            }
+
+            // Переключаем экраны внутри нашего сайта (скрываем первый, показываем второй)
+            document.getElementById('welcome-screen').style.opacity = '0';
+            document.getElementById('welcome-screen').style.visibility = 'hidden';
+
+            document.getElementById('main-screen').style.opacity = '1';
+            document.getElementById('main-screen').style.visibility = 'visible';
+        }
+
+        // ФУНКЦИЯ ДЛЯ ВЫХОДА ИЗ ПРИЛОЖЕНИЯ
+        function exitApp() {
+            // Безопасно закрывает Mini App и возвращает пользователя в чат Telegram
+            tg.close();
+        }
+    </script>
+</body>
+</html>
