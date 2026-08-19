@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
+    <title>Blueprint Mobile - Slider & Icon Grid</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: #0c0d12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .chat-container {
+            position: relative;
+            width: 401px;
+            height: 751px;
+            background-color: #2b75ce;
+            border-radius: 0;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.45) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.45) 1px, transparent 1px),
+                linear-gradient(rgba(255, 255, 255, 0.12) 0.5px, transparent 0.5px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0.5px, transparent 0.5px);
+            background-size: 50px 50px, 50px 50px, 5px 5px, 5px 5px;
+            background-position: 0 0, 0 0, -0.25px -0.25px, -0.25px -0.25px;
+        }
+
+        /* ---- ВЕРХНИЙ БЛОК КНОПОК ---- */
+        .top-buttons-row {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+        }
+
+        .action-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 58px;
+            height: 58px;
+            background-color: #1c4e91;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px #7ba9e8, 0 4px 16px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s ease;
+        }
+        .action-button svg {
+            display: block;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform;
+        }
+        .action-button:active svg {
+            transform: scale(0.8);
+            transition: transform 0.05s linear;
+        }
+        .action-button svg path {
+            stroke: #a2c4f1;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            transition: stroke 0.15s ease;
+        }
+        #btn-new-left svg {
+            width: 28px;
+            height: 28px;
+        }
+        #btn-new-left svg path {
+            stroke-width: 2;
+        }
+        #btn-left svg,
+        #btn-right svg {
+            width: 34px;
+            height: 34px;
+        }
+        #btn-new-right svg {
+            width: 26px;
+            height: 26px;
+        }
+        #btn-new-right svg path {
+            fill: #a2c4f1;
+            stroke: none;
+            transition: fill 0.15s ease;
+        }
+        .action-button:active,
+        .action-button.loading {
+            background-color: #2968ba;
+            transition: background-color 0s;
+        }
+        .action-button:active svg path,
+        .action-button.loading svg path {
+            stroke: #ffffff;
+            transition: stroke 0s;
+        }
+        #btn-new-right:active svg path,
+        #btn-new-right.loading svg path {
+            fill: #ffffff;
+            stroke: none;
+            transition: fill 0s;
+        }
+        .center-buttons-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        /* ---- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ ---- */
+        .nav-panel {
+            position: absolute;
+            bottom: 15px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            background-color: #1c4e91;
+            border-radius: 40px;
+            padding: 6px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            align-items: center;
+            z-index: 10;
+            overflow: hidden;
+            box-sizing: border-box;
+            justify-content: space-between;
+            height: 77px;
+        }
+
+        .nav-slider {
+            position: absolute;
+            top: 6px;
+            left: 0;
+            height: 65px;
+            background-color: #2968ba;
+            border-radius: 35px;
+            z-index: 0;
+            will-change: transform, width;
+            transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1),
+                        width 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .nav-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 65px;
+            color: #a2c4f1;
+            text-decoration: none;
+            cursor: pointer;
+            border-radius: 35px;
+            user-select: none;
+            transition: color 0.2s ease, opacity 0.25s ease;
+            box-sizing: border-box;
+            z-index: 1;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .nav-item svg {
+            display: block;
+            width: 24px;
+            height: 24px;
+            margin-bottom: 5px;
+            will-change: fill, stroke;
+            flex-shrink: 0;
+        }
+
+        .nav-item .stroke-icon {
+            stroke: #a2c4f1;
+            stroke-width: 1.4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.2s ease;
+        }
+
+        .nav-item span {
+            display: block;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .nav-item.active {
+            color: #fff;
+        }
+
+        .nav-item.active .stroke-icon {
+            stroke: #fff;
+        }
+
+        /* ===== КОНТЕЙНЕР ИКОНОК ВНУТРИ ПАНЕЛИ ===== */
+        .icon-grid {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 0 4px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .icon-grid.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .icon-grid .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            height: 65px;
+            padding: 6px 0 4px;
+            border-radius: 35px;
+            cursor: default;
+            background: transparent;
+            transition: background 0.2s, transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            position: relative;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+        .icon-grid .icon-item svg {
+            width: 24px;
+            height: 24px;
+            stroke: #b8d2f5;
+            stroke-width: 1.3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            display: block;
+            margin-bottom: 5px;
+            flex-shrink: 0;
+        }
+        .icon-grid .icon-item span {
+            font-size: 11px;
+            font-weight: 500;
+            color: #b8d2f5;
+            text-align: center;
+            letter-spacing: 0.2px;
+            line-height: 1.1;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .icon-item svg g {
+            stroke: #b8d2f5;
+            stroke-width: 1.3;
+        }
+
+        .nav-panel.text-mode .nav-item:not(.text-trigger) {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .nav-panel.text-mode .nav-item.text-trigger {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .nav-panel:not(.text-mode) .icon-grid {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .nav-panel:not(.text-mode) .nav-item {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .icon-grid .icon-item {
+            transform: scale(0.8) translateY(8px);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .icon-grid.visible .icon-item {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        .icon-grid.visible .icon-item:nth-child(1) { transition-delay: 0.02s; }
+        .icon-grid.visible .icon-item:nth-child(2) { transition-delay: 0.06s; }
+        .icon-grid.visible .icon-item:nth-child(3) { transition-delay: 0.10s; }
+        .icon-grid.visible .icon-item:nth-child(4) { transition-delay: 0.14s; }
+        .icon-grid.visible .icon-item:nth-child(5) { transition-delay: 0.18s; }
+
+        /* ===== ЛЕТАЮЩАЯ КАПСУЛА (ПОЯВЛЕНИЕ ИЗ ЦЕНТРА, БЕЗ СДВИГА СНИЗУ) ===== */
+        .back-capsule {
+            position: absolute;
+            bottom: 95px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.5);
+            background-color: #1c4e91;
+            border-radius: 30px;
+            padding: 6px 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+            cursor: pointer;
+            z-index: 15;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* упругий эффект */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transform-origin: center center;
+        }
+
+        .back-capsule.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) scale(1);
+        }
+
+        .back-capsule:active {
+            opacity: 0.7;
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        .back-capsule svg {
+            width: 18px;
+            height: 18px;
+            stroke: #ffffff;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+
+        <!-- ВЕРХНИЙ РЯД КНОПОК -->
+        <div class="top-buttons-row">
+            <div class="action-button" id="btn-new-left" onclick="triggerClick('btn-new-left')">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 4L8 12L16 20" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+
+            <div class="center-buttons-group">
+                <div class="action-button" id="btn-left" onclick="triggerClick('btn-left')">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5 13C5 16.866 8.13401 20 12 20C15.866 20 19 16.866 19 13C19 9.13401 15.866 6 12 6H7M7 6L10 3M7 6L10 9" />
+                    </svg>
+                </div>
+                <div class="action-button" id="btn-right" onclick="triggerClick('btn-right')">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 13C19 16.866 15.866 20 12 20C8.13401 20 5 16.866 5 13C5 9.13401 8.13401 6 12 6H17M17 6L14 3M17 6L14 9" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="action-button" id="btn-new-right" onclick="triggerClick('btn-new-right')">
+                <svg viewBox="0 -0.5 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                        <g transform="translate(-99.000000, -200.000000)">
+                            <g transform="translate(56.000000, 160.000000)">
+                                <path d="M60.85,51 L57.7,51 C55.96015,51 54.55,52.343 54.55,54 L54.55,57 C54.55,58.657 55.96015,60 57.7,60 L60.85,60 C62.58985,60 64,58.657 64,57 L64,54 C64,52.343 62.58985,51 60.85,51 M49.3,51 L46.15,51 C44.41015,51 43,52.343 43,54 L43,57 C43,58.657 44.41015,60 46.15,60 L49.3,60 C51.03985,60 52.45,58.657 52.45,57 L52.45,54 C52.45,52.343 51.03985,51 49.3,51 M60.85,40 L57.7,40 C55.96015,40 54.55,41.343 54.55,43 L54.55,46 C54.55,47.657 55.96015,49 57.7,49 L60.85,49 C62.58985,49 64,47.657 64,46 L64,43 C64,41.343 62.58985,40 60.85,40 M52.45,43 L52.45,46 C52.45,47.657 51.03985,49 49.3,49 L46.15,49 C44.41015,49 43,47.657 43,46 L43,43 C43,41.343 44.41015,40 46.15,40 L49.3,40 C51.03985,40 52.45,41.343 52.45,43" id="menu_navigation_grid-[#1529]"></path>
+                            </g>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- ЛЕТАЮЩАЯ КАПСУЛА -->
+        <div class="back-capsule" id="backCapsule" onclick="returnToMain()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </div>
+
+        <!-- НИЖНЯЯ ПАНЕЛЬ -->
+        <div class="nav-panel" id="navPanel">
+            <div class="nav-slider" id="slider"></div>
+
+            <div class="icon-grid" id="iconGrid">
+                <div class="icon-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l3 0"/><path d="M14 20l7 0"/><path d="M6.9 15l6.9 0"/><path d="M10.2 6.3l5.8 13.7"/><path d="M5 20l6 -16l2 0l7 16"/></svg>
+                    <span>Шрифт</span>
+                </div>
+                <div class="icon-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.58 13.79c.27 .68 .42 1.43 .42 2.21c0 1.77 -.77 3.37 -2 4.46a5.93 5.93 0 0 1 -4 1.54c-3.31 0 -6 -2.69 -6 -6c0 -2.76 1.88 -5.1 4.42 -5.79" /><path d="M17.58 10.21c2.54 .69 4.42 3.03 4.42 5.79c0 3.31 -2.69 6 -6 6a5.93 5.93 0 0 1 -4 -1.54" /><path d="M12 8m-6 0a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" /></svg>
+                    <span>Цвет</span>
+                </div>
+                <div class="icon-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/></svg>
+                    <span>Гиперссылки</span>
+                </div>
+                <div class="icon-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><g transform="scale(-1,1) translate(-24,0)"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M13 12h5" /><path d="M13 15h4" /><path d="M13 18h1" /><path d="M13 9h4" /><path d="M13 6h1" /></g></svg>
+                    <span>Тень 1</span>
+                </div>
+                <div class="icon-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10h2a2 2 0 0 1 2 2v5h-3a2 2 0 1 1 0 -4h3"/><path d="M14 7v10"/><path d="M14 10m0 2a2 2 0 0 1 2 -2h1a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2z"/></svg>
+                    <span>Полужирный</span>
+                </div>
+            </div>
+
+            <div class="nav-item text-trigger" onclick="setActiveTab(this, true)">
+                <svg class="stroke-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 7v-2h13v2" />
+                    <path d="M10 5v14" />
+                    <path d="M12 19h-4" />
+                    <path d="M15 13v-1h6v1" />
+                    <path d="M18 12v7" />
+                    <path d="M17 19h2" />
+                </svg>
+                <span>Текст</span>
+            </div>
+
+            <div class="nav-item" onclick="setActiveTab(this, false)">
+                <svg class="stroke-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M8 16l2 -6l6 -2l-2 6l-6 2" />
+                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                    <path d="M12 3l0 2" />
+                    <path d="M12 19l0 2" />
+                    <path d="M3 12l2 0" />
+                    <path d="M19 12l2 0" />
+                </svg>
+                <span>Логика</span>
+            </div>
+
+            <div class="nav-item active" id="defaultTab" onclick="setActiveTab(this, false)">
+                <svg class="stroke-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5" />
+                </svg>
+                <span>Настройки</span>
+            </div>
+
+            <div class="nav-item" onclick="setActiveTab(this, false)">
+                <svg class="stroke-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 7l-6.5 6.5a1.5 1.5 0 0 0 3 3l6.5 -6.5a3 3 0 0 0 -6 -6l-6.5 6.5a4.5 4.5 0 0 0 9 9l6.5 -6.5" />
+                </svg>
+                <span>Вложение</span>
+            </div>
+
+            <div class="nav-item" onclick="setActiveTab(this, false)">
+                <svg class="stroke-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+                  <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                </svg>
+                <span>Профиль</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const slider = document.getElementById('slider');
+        const navPanel = document.getElementById('navPanel');
+        const iconGrid = document.getElementById('iconGrid');
+        const backCapsule = document.getElementById('backCapsule');
+
+        function setActiveTab(element, showIcons) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            const parentLeft = element.parentElement.getBoundingClientRect().left;
+            const elementLeft = element.getBoundingClientRect().left;
+            const offsetLeft = elementLeft - parentLeft;
+
+            slider.style.width = `${Math.round(element.offsetWidth)}px`;
+            slider.style.transform = `translateX(${Math.round(offsetLeft)}px)`;
+
+            if (showIcons) {
+                navPanel.classList.add('text-mode');
+                backCapsule.classList.add('visible');
+                requestAnimationFrame(() => {
+                    iconGrid.classList.add('visible');
+                });
+            } else {
+                iconGrid.classList.remove('visible');
+                navPanel.classList.remove('text-mode');
+                backCapsule.classList.remove('visible');
+            }
+        }
+
+        function returnToMain() {
+            // Просто скрываем сетку иконок и капсулу, не меняя активную вкладку.
+            // Благодаря этому подложка (slider) остается на месте (например, на вкладке "Текст").
+            iconGrid.classList.remove('visible');
+            navPanel.classList.remove('text-mode');
+            backCapsule.classList.remove('visible');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const defaultTab = document.getElementById('defaultTab');
+            setActiveTab(defaultTab, false);
+        });
+
+        const activeTimers = {
+            'btn-new-left': null,
+            'btn-left': null,
+            'btn-right': null,
+            'btn-new-right': null
+        };
+
+        function triggerClick(buttonId) {
+            const button = document.getElementById(buttonId);
+            if (button.classList.contains('loading')) return;
+
+            button.classList.add('loading');
+
+            activeTimers[buttonId] = setTimeout(() => {
+                button.classList.remove('loading');
+                activeTimers[buttonId] = null;
+            }, 200);
+        }
+    </script>
+</body>
+</html>
